@@ -174,7 +174,7 @@ export default class App extends Component<Props> {
 
 	toJava () {
 
-		//LocationServiceModule.receiveFromJs("VAI PRA PUTA QUE PARIU!");
+		//LocationServiceModule.receiveFromJs("O Sonho é Popular!");
 
 	}
 
