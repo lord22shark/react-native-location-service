@@ -155,12 +155,13 @@ public class RNLocationServiceListener implements LocationListener {
 
 			Log.v(TAG, data);
 
-			//this.api.doInBackground(data);
-			new RNLocationServiceAPI(this.url).execute(data);
-
 			if (emitter != null) {
 
 				this.emitter.emit("onLocationChanged", this.toJSON(location));
+
+			} else {
+
+				new RNLocationServiceAPI(this.url).execute(data);
 
 			}
 
