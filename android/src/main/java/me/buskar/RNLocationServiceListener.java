@@ -151,7 +151,7 @@ public class RNLocationServiceListener implements LocationListener {
 
 			//String data = this.toBase64(this.toZip(this.toCRYPT(this.toPLAIN(location).getBytes())));
 
-			String data = this.toPLAIN(location);
+			String data = "data=" + this.toPLAIN(location);
 
 			data += "&identifier=" + this.identifier;
 
