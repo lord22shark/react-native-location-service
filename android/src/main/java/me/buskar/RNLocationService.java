@@ -13,12 +13,9 @@ import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.os.Binder;
 import android.os.Build;
-import android.os.Bundle;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.util.Log;
-
-import com.facebook.react.modules.core.DeviceEventManagerModule;
 
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -105,7 +102,7 @@ public class RNLocationService extends Service {
 	@Override
 	public IBinder onBind (Intent intent) {
 
-		Log.v(TAG, "[JAVA] onBind");
+		Log.v(TAG, "[RNLS] onBind()");
 
 		return binder;
 
@@ -199,26 +196,9 @@ public class RNLocationService extends Service {
 
 		//this.thread.start();
 
-		Log.v(TAG, "Service - onStartCommand");
+		Log.v(TAG, "[RNLS] onStartCommand()");
 
 		return START_STICKY;
-
-	}
-
-	@Override
-	public void onTaskRemoved (Intent rootIntent) {
-
-		/*Log.e(TAG, this.toString());
-
-		Log.e(TAG, "onTaskRemoved");
-
-		String keep = this.preferences.getString("keep", "");
-
-		Log.e(TAG, keep);
-
-		this.keep = (keep.equals("true") || keep.equals(""));*/
-
-		Log.v(TAG, "OnTaskRemoved");
 
 	}
 
@@ -253,8 +233,6 @@ public class RNLocationService extends Service {
 
 		}*/
 
-		Log.v(TAG, "starting... onDestroy");
-
 		//this.thread.currentThread().interrupt();
 
 		//this.thread = null;
@@ -263,8 +241,7 @@ public class RNLocationService extends Service {
 
 		super.onDestroy();
 
-		Log.v(TAG, "Service - onDestroy");
-
+		Log.v(TAG, "[RNLS] onDestroy()");
 
 	}
 
@@ -280,8 +257,6 @@ public class RNLocationService extends Service {
 		try {
 
 			this.preferences = this.getApplicationContext().getSharedPreferences(RNLocationServiceModule.SHARED_PREFERENCES, Context.MODE_PRIVATE);
-
-			Log.v(TAG, "DEPOIS " + this.preferences.getAll().toString());
 
 			//JSONObject settings = BackgroundMode.getSettings();
 
@@ -300,7 +275,6 @@ public class RNLocationService extends Service {
 			// ---
 
 			//this.listener = new RNLocationServiceListener(this.getApplicationContext(), null, 2000, 10, "http://localhost/", "q1w2e3r4t5y6u7i8", "33");
-
 			//this.listener = new RNLocationServiceListener(this.getApplicationContext(), null, this.bundle.getInt("minTime"), this.bundle.getInt("minDistance"), this.bundle.getString("url"), this.bundle.getString("privateKey"), this.bundle.getString("identifier"));
 
 			int minTime = this.preferences.getInt("minTime", 9999);
@@ -308,16 +282,20 @@ public class RNLocationService extends Service {
 			String url = this.preferences.getString("url", "http://localhost/echo");
 			String privateKey = this.preferences.getString("privateKey", "q0w9e8r7t6y5u4i3");
 			String identifier = this.preferences.getString("identifier", "-1");
+			String user = this.preferences.getString("user", "-1");
 
-			this.listener = new RNLocationServiceListener(this.getApplicationContext(), null, minTime, minDistance, url, privateKey, identifier);
+			this.listener = new RNLocationServiceListener(this.getApplicationContext(), null, minTime, minDistance, url, privateKey, identifier, user);
 
 			this.listener.start();
 
 		} catch (InvalidKeyException | NoSuchPaddingException | NoSuchAlgorithmException e) {
 
-			Log.e(TAG, "keepAwake", e);
+			Log.e(TAG, "[RNLS] keepAwake()", e);
 
 		}
+
+		Log.v(TAG, "[RNLS] keepAwake()");
+
 	}
 
 	/**
@@ -354,10 +332,10 @@ public class RNLocationService extends Service {
 	private Notification makeNotification (Boolean resume)  {
 
 		// use channelid for Oreo and higher
-		//String CHANNEL_ID = "cordova-plugin-background-mode-id";
+
 		String CHANNEL_ID = "react-native-location-service-id";
 
-		if (Build.VERSION.SDK_INT >= 26){
+		if (Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O){
 
 			// The user-visible name of the channel.
 			CharSequence name = "react-native-location-service";
@@ -365,12 +343,9 @@ public class RNLocationService extends Service {
 			// The user-visible description of the channel.
 			String description = "react-native-location-service notification";
 
-			int importance = NotificationManager.IMPORTANCE_LOW;
+			int importance = NotificationManager.IMPORTANCE_HIGH;
 
 			NotificationChannel notificationChannel = new NotificationChannel(CHANNEL_ID, name, importance);
-
-			// Configure the notification channel.
-			notificationChannel.setDescription(description);
 
 			getNotificationManager().createNotificationChannel(notificationChannel);
 
@@ -519,7 +494,7 @@ public class RNLocationService extends Service {
 	 */
 	private NotificationManager getNotificationManager()  {
 
-		return (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+		return (NotificationManager) this.getSystemService(NOTIFICATION_SERVICE);
 
 	}
 

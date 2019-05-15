@@ -103,7 +103,7 @@ public class RNLocationServiceModule extends ReactContextBaseJavaModule {
 
 			RNLocationServiceModule.this.reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit("onBindService", true);
 
-			Log.v(TAG, "[JAVA] OnServiceConnected");
+			Log.v(TAG, "[RNLS] onServiceConnected()");
 
 		}
 
@@ -115,7 +115,7 @@ public class RNLocationServiceModule extends ReactContextBaseJavaModule {
 
 			RNLocationServiceModule.this.reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit("onBindService", false);
 
-			Log.v(TAG, "[JAVA] onServiceDisconnected");
+			Log.v(TAG, "[RNLS] onServiceDisconnected()");
 
 		}
 
@@ -166,7 +166,7 @@ public class RNLocationServiceModule extends ReactContextBaseJavaModule {
 	 *
 	 */
 	@ReactMethod
-	public void startListener (int minTime, float minDistance, String url, String privateKey, String identifier, Callback callback) {
+	public void startListener (int minTime, float minDistance, String url, String privateKey, String identifier, String user, Callback callback) {
 
 		try {
 
@@ -178,7 +178,7 @@ public class RNLocationServiceModule extends ReactContextBaseJavaModule {
 
 				} else if (this.listener == null) {
 
-					this.listener = new RNLocationServiceListener(this.context, this.reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class), minTime, minDistance, url, privateKey, identifier);
+					this.listener = new RNLocationServiceListener(this.context, this.reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class), minTime, minDistance, url, privateKey, identifier, user);
 
 					this.listener.start();
 
@@ -330,16 +330,11 @@ public class RNLocationServiceModule extends ReactContextBaseJavaModule {
 
 			if (RNLocationService.class.getName().equals(service.service.getClassName())) {
 
-				Log.v(TAG, "[JAVA] isRunning - TRUE");
-
 				return true;
 
 			}
 
 		}
-
-		//return false;
-		Log.v(TAG, "[JAVA] isRunning - FALSE");
 
 		return false;
 
@@ -355,9 +350,7 @@ public class RNLocationServiceModule extends ReactContextBaseJavaModule {
 	 * @param callback
 	 */
 	@ReactMethod
-	public void startService (int minTime, float minDistance, String url, String privateKey, String identifier, Callback callback) {
-
-		Log.v(TAG, "[JAVA] ReactMethod s1 Starting...");
+	public void startService (int minTime, float minDistance, String url, String privateKey, String identifier, String user, Callback callback) {
 
 		try {
 
@@ -389,20 +382,20 @@ public class RNLocationServiceModule extends ReactContextBaseJavaModule {
 			editor.apply();
 			editor.putString("url", url);
 			editor.apply();
-
-			Log.v(TAG, "ANTES " + this.preferences.getAll().toString());
+			editor.putString("user", user);
+			editor.apply();
 
 			this.context.bindService(this.serviceIntent, connection, Context.BIND_AUTO_CREATE);
 
 			//context.startService(this.serviceIntent);
 
-			callback.invoke("[JAVA] Started", null);
+			callback.invoke(true, null);
 
-		} catch (Exception e) {
+		} catch (Exception exception) {
 
-			Log.v(TAG, "[JAVA] s1 Error", e);
+			Log.e(TAG, "[RNLS] startService()", exception);
 
-			callback.invoke(null, e.toString());
+			callback.invoke(null, exception.toString());
 
 		}
 
@@ -410,8 +403,6 @@ public class RNLocationServiceModule extends ReactContextBaseJavaModule {
 
 	@ReactMethod
 	public void stopService (Callback callback) {
-
-		Log.v(TAG, "[JAVA] ReactMethod s2 Stopping...");
 
 		try {
 
@@ -432,13 +423,13 @@ public class RNLocationServiceModule extends ReactContextBaseJavaModule {
 
 			this.context.stopService(this.serviceIntent);
 
-			callback.invoke("[JAVA] Stopped", null);
+			callback.invoke(true, null);
 
-		} catch (Exception e) {
+		} catch (Exception exception) {
 
-			Log.v(TAG, "[JAVA] s2 Error", e);
+			Log.e(TAG, "[RNLS] stopService()", exception);
 
-			callback.invoke(null, e.toString());
+			callback.invoke(null, exception.toString());
 
 		}
 

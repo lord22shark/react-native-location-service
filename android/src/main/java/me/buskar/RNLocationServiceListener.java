@@ -13,6 +13,7 @@ import com.facebook.react.modules.core.DeviceEventManagerModule;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
@@ -83,6 +84,11 @@ public class RNLocationServiceListener implements LocationListener {
 	/**
 	 *
 	 */
+	private String user = null;
+
+	/**
+	 *
+	 */
 	private Cipher cipher;
 
 	/**
@@ -103,7 +109,7 @@ public class RNLocationServiceListener implements LocationListener {
 	 * @throws NoSuchPaddingException
 	 * @throws NoSuchAlgorithmException
 	 */
-	public RNLocationServiceListener(Context applicationContext, DeviceEventManagerModule.RCTDeviceEventEmitter emitter, int minTime, float minDistance, String url, String privateKey, String identifier) throws InvalidKeyException, NoSuchPaddingException, NoSuchAlgorithmException {
+	public RNLocationServiceListener(Context applicationContext, DeviceEventManagerModule.RCTDeviceEventEmitter emitter, int minTime, float minDistance, String url, String privateKey, String identifier, String user) throws InvalidKeyException, NoSuchPaddingException, NoSuchAlgorithmException {
 
 		this.locationManager = (LocationManager) applicationContext.getSystemService(Context.LOCATION_SERVICE);
 
@@ -112,6 +118,8 @@ public class RNLocationServiceListener implements LocationListener {
 		this.minDistance = minDistance;
 
 		this.minTime = minTime;
+
+		this.user = user;
 
 		//this.api = new RNLocationServiceAPI(this.url);
 
@@ -139,7 +147,7 @@ public class RNLocationServiceListener implements LocationListener {
 
 		try {
 
-			Log.v(TAG, this.toPLAIN(location));
+			Log.v(TAG, this.toBase64(this.toZip(this.toCRYPT(this.toPLAIN(location).getBytes()))));
 
 			//data = this.toCRYPT(data.getBytes());
 
@@ -151,11 +159,11 @@ public class RNLocationServiceListener implements LocationListener {
 
 			//String data = this.toBase64(this.toZip(this.toCRYPT(this.toPLAIN(location).getBytes())));
 
-			String data = "data=" + this.toPLAIN(location);
+			String data = "user=" + URLEncoder.encode(this.user, "UTF-8") + "&data=" + URLEncoder.encode(this.toPLAIN(location), "UTF-8");
 
-			data += "&identifier=" + this.identifier;
+			data += "&identifier=" + URLEncoder.encode(this.identifier, "UTF-8");
 
-			Log.v(TAG, data);
+			Log.v(TAG, "[DATA] " + data);
 
 			if (emitter != null) {
 
@@ -169,7 +177,7 @@ public class RNLocationServiceListener implements LocationListener {
 
 		} catch (Exception exception) {
 
-			Log.e(this.TAG, "onLocationChanged did not work properly", exception);
+			Log.e(this.TAG, "[RNLS] onLocationChanged did not work properly", exception);
 
 			if (emitter != null) {
 
