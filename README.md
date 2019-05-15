@@ -64,7 +64,7 @@ export default class App extends Component<Props> {
 		super(props);
 
 		this.state = {
-			coco: null,
+			bla: null,
 			running: false,
 			service: false
 		};
@@ -107,7 +107,7 @@ export default class App extends Component<Props> {
 
 		const data = "a=b&c=d&e=f&0=1";
 
-		fetch('http://192.168.0.250/public/echo.php', {
+		fetch('http://ilhost/public/echo.php', {
 			headers: new Headers({
 				'Content-Type': 'application/x-www-form-urlencoded',
 				'Content-Length': data.length.toString(),
@@ -145,7 +145,7 @@ export default class App extends Component<Props> {
 	onLocationChanged (data) {
 
 		this.setState({
-			coco: data
+			bla: data
 		});
 
 	}
@@ -165,7 +165,7 @@ export default class App extends Component<Props> {
 		}, msg => {
 
 		this.setState({
-		coco: msg
+		bla: msg
 		});
 
 		});*/
@@ -212,7 +212,7 @@ export default class App extends Component<Props> {
 
 		if (this.state.running === false) {
 
-			RNLocationService.startListener(2222, 10, 'http://192.168.0.250/public/echo.php', 'q1w2e3r4t5y6u7i8', '4', (result, error) => {
+			RNLocationService.startListener(2222, 10, 'http://192.168.0.250/public/echo.php', 'q1w2e3r4t5y6u7i8', '4', 'auth0ID', (result, error) => {
 
 				console.log('startListener', result, error);
 
@@ -250,7 +250,7 @@ export default class App extends Component<Props> {
 
 		if (this.state.service === false) {
 
-			RNLocationService.startService(2121, 5, 'http://192.168.0.250/public/echo.php', 'q1w2e3r4t5y6u7i8', '4', (result, error) => {
+			RNLocationService.startService(2121, 5, 'http://ilhost/public/echo.php', 'q1w2e3r4t5y6u7i8', '4', 'auth0ID' (result, error) => {
 
 				console.log('[JS] Callback Start Service', result, error);
 
@@ -299,7 +299,7 @@ export default class App extends Component<Props> {
 		return (
 			<View style={styles.container}>
 				<Text style={styles.instructions}>{instructions}</Text>
-				<Text style={styles.instructions}>COCO: {this.state.coco || null}</Text>
+				<Text style={styles.instructions}>bla: {this.state.bla || null}</Text>
 				<Button title="RODA (a)" onPress={this.a.bind(this)} />
 				<Button title="RODA (b)" onPress={this.b.bind(this)} />
 				<Button title="RODA (c)" onPress={this.c.bind(this)} />
