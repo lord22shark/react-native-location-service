@@ -15,12 +15,16 @@ import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
 import android.os.PowerManager;
+import android.support.annotation.RequiresApi;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 
 import javax.crypto.NoSuchPaddingException;
+
+import static android.support.v4.app.NotificationCompat.PRIORITY_MIN;
 
 public class RNLocationService extends Service {
 
@@ -45,7 +49,7 @@ public class RNLocationService extends Service {
 	/**
 	 * Fixed ID for the 'foreground' notification
 	 */
-	public static final int NOTIFICATION_ID = -30495834;
+	public static final int NOTIFICATION_ID = 101;
 
 	/**
 	 * Default title of the background notification
@@ -55,12 +59,17 @@ public class RNLocationService extends Service {
 	/**
 	 * Default text of the background notification
 	 */
-	private static final String NOTIFICATION_TEXT = "Atualizando sua localização!";
+	private static final String NOTIFICATION_TEXT = "Estamos acompanhando seu posicionamento!";
 
 	/**
 	 * Default icon of the background notification
 	 */
-	private static final String NOTIFICATION_ICON = "icon";
+	private static final int NOTIFICATION_ICON = android.R.mipmap.sym_def_app_icon;
+
+	/**
+	 *
+	 */
+	private static final String CHANNEL_ID = "react-native-location-service-id";
 
 	/**
 	 * Binder given to clients
@@ -130,6 +139,8 @@ public class RNLocationService extends Service {
 	 */
 	@Override
 	public int onStartCommand (Intent intent, int flags, int startId) {
+
+		super.onStartCommand(intent, flags, startId);
 
 		/*if (this.preferences == null) {
 
@@ -258,12 +269,25 @@ public class RNLocationService extends Service {
 
 			this.preferences = this.getApplicationContext().getSharedPreferences(RNLocationServiceModule.SHARED_PREFERENCES, Context.MODE_PRIVATE);
 
+			// Notification ---
+
+			NotificationManager notificationManager = getNotificationManager();
+
+			String channelID = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ? createNotificationChannel(notificationManager) : "";
+
+			NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, channelID);
+
+			Notification notification = notificationBuilder.setOngoing(true).setSmallIcon(android.R.mipmap.sym_def_app_icon).setContentTitle(NOTIFICATION_TITLE).setContentText(NOTIFICATION_TEXT).setPriority(PRIORITY_MIN).setCategory(NotificationCompat.CATEGORY_SERVICE).setChannelId(channelID).build();
+
+			// Notification ---
+
 			//JSONObject settings = BackgroundMode.getSettings();
 
 			//boolean isSilent    = settings.optBoolean("silent", false);
 
 			//if (!isSilent) {
-			startForeground(NOTIFICATION_ID, makeNotification(false));
+			//startForeground(NOTIFICATION_ID, makeNotification(false));
+			startForeground(NOTIFICATION_ID, notification);
 			//}
 
 			PowerManager powerManager = (PowerManager)getSystemService(POWER_SERVICE);
@@ -325,35 +349,56 @@ public class RNLocationService extends Service {
 
 	}
 
+	@RequiresApi(Build.VERSION_CODES.O)
+	private String createNotificationChannel (NotificationManager notificationManager) {
+
+		NotificationChannel notificationChannel = new NotificationChannel(CHANNEL_ID, "react-native-location-service", NotificationManager.IMPORTANCE_HIGH);
+
+		notificationChannel.setImportance(NotificationManager.IMPORTANCE_NONE);
+
+		notificationChannel.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
+
+		notificationManager.createNotificationChannel(notificationChannel);
+
+		return CHANNEL_ID;
+
+	}
+
 	/**
 	 * Create a notification as the visible part to be able to put the service
 	 * in a foreground state by using the default settings.
 	 */
 	private Notification makeNotification (Boolean resume)  {
 
-		// use channelid for Oreo and higher
+		return null;
 
-		String CHANNEL_ID = "react-native-location-service-id";
+		/*NotificationManager notificationManager = getNotificationManager();
+
+		String channelID = "";
 
 		if (Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O){
 
-			// The user-visible name of the channel.
-			CharSequence name = "react-native-location-service";
+			NotificationChannel notificationChannel = new NotificationChannel(CHANNEL_ID, "react-native-location-service", NotificationManager.IMPORTANCE_HIGH);
 
-			// The user-visible description of the channel.
-			String description = "react-native-location-service notification";
+			notificationChannel.setImportance(NotificationManager.IMPORTANCE_NONE);
 
-			int importance = NotificationManager.IMPORTANCE_HIGH;
+			notificationChannel.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
 
-			NotificationChannel notificationChannel = new NotificationChannel(CHANNEL_ID, name, importance);
+			notificationManager.createNotificationChannel(notificationChannel);
 
-			getNotificationManager().createNotificationChannel(notificationChannel);
+			channelID = CHANNEL_ID;
 
 		}
 
+		NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, channelID);
+
+		Notification notification = notificationBuilder.setOngoing(true).setSmallIcon(android.R.mipmap.sym_def_app_icon).setContentTitle(NOTIFICATION_TITLE).setContentText(NOTIFICATION_TEXT).setPriority(PRIORITY_MIN).setCategory(NotificationCompat.CATEGORY_SERVICE).setChannelId(channelID);
+
+		return notification.build();*/
+
 		/*String title = NOTIFICATION_TITLE;
 		String text     = settings.optString("text", NOTIFICATION_TEXT);
-		boolean bigText = settings.optBoolean("bigText", false);*/
+		boolean bigText = settings.optBoolean("bigText", false);
 
 		Context context = this.getApplicationContext();
 
@@ -369,14 +414,14 @@ public class RNLocationService extends Service {
 
 		}
 
-		/*if (settings.optBoolean("hidden", true)) {
+		if (settings.optBoolean("hidden", true)) {
 			notification.setPriority(Notification.PRIORITY_MIN);
-		}*/
+		}
 
-		/*if (bigText || text.contains("\n")) {
+		if (bigText || text.contains("\n")) {
 			notification.setStyle(
 					new Notification.BigTextStyle().bigText(text));
-		}*/
+		}
 
 		setColor(notification);
 
@@ -391,7 +436,7 @@ public class RNLocationService extends Service {
 
 		}
 
-		return notification.build();
+		return notification.build();*/
 
 	}
 
@@ -423,7 +468,7 @@ public class RNLocationService extends Service {
 	 */
 	private int getIconResId () {
 
-		int resId = getIconResId(NOTIFICATION_ICON, "mipmap");
+		/*int resId = getIconResId(NOTIFICATION_ICON, "mipmap");
 
 		if (resId == 0) {
 
@@ -431,7 +476,9 @@ public class RNLocationService extends Service {
 
 		}
 
-		return resId;
+		return resId;*/
+
+		return 0;
 	}
 
 	/**
@@ -444,7 +491,7 @@ public class RNLocationService extends Service {
 	 */
 	private int getIconResId (String icon, String type) {
 
-		Resources res  = getResources();
+		/*Resources res  = getResources();
 
 		String packageName = getPackageName();
 
@@ -456,7 +503,9 @@ public class RNLocationService extends Service {
 
 		}
 
-		return resId;
+		return resId;*/
+
+		return 0;
 	}
 
 	/**
