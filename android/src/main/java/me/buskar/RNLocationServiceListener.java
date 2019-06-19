@@ -171,6 +171,9 @@ public class RNLocationServiceListener implements LocationListener {
 
 			} else {
 
+				// TODO if not internet, store and than dispatch
+				// TODO change toPlain to an array format
+
 				new RNLocationServiceAPI(this.url).execute(data);
 
 			}

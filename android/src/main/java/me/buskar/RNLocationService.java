@@ -5,12 +5,11 @@ import android.annotation.TargetApi;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
+import android.content.pm.PackageManager;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
@@ -269,6 +268,18 @@ public class RNLocationService extends Service {
 
 			this.preferences = this.getApplicationContext().getSharedPreferences(RNLocationServiceModule.SHARED_PREFERENCES, Context.MODE_PRIVATE);
 
+			// Icon ---
+
+			int icon = android.R.mipmap.sym_def_app_icon;
+
+			try {
+
+				icon = this.getPackageManager().getApplicationInfo("me.buskar.motorista", PackageManager.GET_META_DATA).icon;
+
+				Log.v(TAG, String.valueOf(icon));
+
+			} catch (PackageManager.NameNotFoundException nameNotFoundException) {}
+
 			// Notification ---
 
 			NotificationManager notificationManager = getNotificationManager();
@@ -277,7 +288,7 @@ public class RNLocationService extends Service {
 
 			NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, channelID);
 
-			Notification notification = notificationBuilder.setOngoing(true).setSmallIcon(android.R.mipmap.sym_def_app_icon).setContentTitle(NOTIFICATION_TITLE).setContentText(NOTIFICATION_TEXT).setPriority(PRIORITY_MIN).setCategory(NotificationCompat.CATEGORY_SERVICE).setChannelId(channelID).build();
+			Notification notification = notificationBuilder.setOngoing(true).setSmallIcon(icon).setContentTitle(NOTIFICATION_TITLE).setContentText(NOTIFICATION_TEXT).setPriority(PRIORITY_MIN).setCategory(NotificationCompat.CATEGORY_SERVICE).setChannelId(channelID).build();
 
 			// Notification ---
 

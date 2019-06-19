@@ -14,6 +14,7 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.nfc.Tag;
 import android.os.IBinder;
 import android.support.v4.app.ActivityCompat;
 import android.util.Log;
@@ -49,12 +50,7 @@ public class RNLocationServiceModule extends ReactContextBaseJavaModule {
 	/**
 	 *
 	 */
-	private final int REQUEST_PERMISSION_LOCATION = 1;
-
-	/**
-	 *
-	 */
-	private Boolean permissionsGranted = null;
+	private final int REQUEST_PERMISSION_LOCATION = 22;
 
 	/**
 	 *
@@ -130,8 +126,6 @@ public class RNLocationServiceModule extends ReactContextBaseJavaModule {
 	
 		this.reactContext = reactContext;
 
-		this.permissionsGranted = (ActivityCompat.checkSelfPermission(this.reactContext.getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) && (ActivityCompat.checkSelfPermission(this.getReactApplicationContext().getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED);
-
 		this.context = this.reactContext.getApplicationContext();
 
 		this.preferences = this.context.getSharedPreferences(SHARED_PREFERENCES, Context.MODE_PRIVATE);
@@ -148,10 +142,20 @@ public class RNLocationServiceModule extends ReactContextBaseJavaModule {
 	
 	}
 
+	/**
+	 *
+	 * @return
+	 */
+	private Boolean isPermited () {
+
+		return (ActivityCompat.checkSelfPermission(this.reactContext.getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) && (ActivityCompat.checkSelfPermission(this.getReactApplicationContext().getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED);
+
+	}
+
 	@ReactMethod
 	public void isPermited (Callback onSuccess) {
 
-		onSuccess.invoke(this.permissionsGranted);
+		onSuccess.invoke(this.isPermited());
 
 	}
 
@@ -168,9 +172,17 @@ public class RNLocationServiceModule extends ReactContextBaseJavaModule {
 	@ReactMethod
 	public void startListener (int minTime, float minDistance, String url, String privateKey, String identifier, String user, Callback callback) {
 
+		if (callback == null) {
+
+			Log.e(TAG, "[RNLS] RNLocationServiceModule.startListener - callback MUST NOT be null");
+
+			return;
+
+		}
+
 		try {
 
-			if (this.permissionsGranted == true) {
+			if (isPermited()) {
 
 				if ((minTime <= 0) || (minDistance <= 0.0) || (url == null)) {
 
@@ -211,6 +223,14 @@ public class RNLocationServiceModule extends ReactContextBaseJavaModule {
 	 */
 	@ReactMethod
 	public void stopListener (Callback callback) {
+
+		if (callback == null) {
+
+			Log.e(TAG, "[RNLS] RNLocationServiceModule.stopListener - callback MUST NOT be null");
+
+			return;
+
+		}
 
 		try {
 
@@ -352,50 +372,66 @@ public class RNLocationServiceModule extends ReactContextBaseJavaModule {
 	@ReactMethod
 	public void startService (int minTime, float minDistance, String url, String privateKey, String identifier, String user, Callback callback) {
 
-		try {
+		if (callback == null) {
 
-			/*if (this.isDisabled || this.isBind) {
+			Log.e(TAG, "[RNLS] RNLocationServiceModule.startService - callback MUST NOT be null");
 
-				return;
+			return;
 
-			}*/
+		}
 
-			this.serviceIntent = new Intent(this.context, RNLocationService.class);
+		if (isPermited()) {
 
-			/*this.serviceIntent.putExtra("minTime", minTime);
-			this.serviceIntent.putExtra("minDistance", minDistance);
-			this.serviceIntent.putExtra("privateKey", privateKey);
-			this.serviceIntent.putExtra("identifier", identifier);
-			this.serviceIntent.putExtra("url", url);*/
+			try {
 
-			SharedPreferences.Editor editor = this.preferences.edit();
+				/*if (this.isDisabled || this.isBind) {
 
-			editor.clear();
-			editor.apply();
-			editor.putInt("minTime", minTime);
-			editor.apply();
-			editor.putInt("minDistance", (int) minDistance);
-			editor.apply();
-			editor.putString("privateKey", privateKey);
-			editor.apply();
-			editor.putString("identifier", identifier);
-			editor.apply();
-			editor.putString("url", url);
-			editor.apply();
-			editor.putString("user", user);
-			editor.apply();
+					return;
 
-			this.context.bindService(this.serviceIntent, connection, Context.BIND_AUTO_CREATE);
+				}*/
 
-			//context.startService(this.serviceIntent);
+				this.serviceIntent = new Intent(this.context, RNLocationService.class);
 
-			callback.invoke(true, null);
+				/*this.serviceIntent.putExtra("minTime", minTime);
+				this.serviceIntent.putExtra("minDistance", minDistance);
+				this.serviceIntent.putExtra("privateKey", privateKey);
+				this.serviceIntent.putExtra("identifier", identifier);
+				this.serviceIntent.putExtra("url", url);*/
 
-		} catch (Exception exception) {
+				SharedPreferences.Editor editor = this.preferences.edit();
 
-			Log.e(TAG, "[RNLS] startService()", exception);
+				editor.clear();
+				editor.apply();
+				editor.putInt("minTime", minTime);
+				editor.apply();
+				editor.putInt("minDistance", (int) minDistance);
+				editor.apply();
+				editor.putString("privateKey", privateKey);
+				editor.apply();
+				editor.putString("identifier", identifier);
+				editor.apply();
+				editor.putString("url", url);
+				editor.apply();
+				editor.putString("user", user);
+				editor.apply();
 
-			callback.invoke(null, exception.toString());
+				this.context.bindService(this.serviceIntent, connection, Context.BIND_AUTO_CREATE);
+
+				//context.startService(this.serviceIntent);
+
+				callback.invoke(true, null);
+
+			} catch (Exception exception) {
+
+				Log.e(TAG, "[RNLS] startService()", exception);
+
+				callback.invoke(null, exception.toString());
+
+			}
+
+		} else {
+
+			callback.invoke(null, "Permissions of FINE and COARSE location are not GRANTED! Request!");
 
 		}
 
@@ -403,6 +439,14 @@ public class RNLocationServiceModule extends ReactContextBaseJavaModule {
 
 	@ReactMethod
 	public void stopService (Callback callback) {
+
+		if (callback == null) {
+
+			Log.e(TAG, "[RNLS] RNLocationServiceModule.stopService - callback MUST NOT be null");
+
+			return;
+
+		}
 
 		try {
 
@@ -434,7 +478,6 @@ public class RNLocationServiceModule extends ReactContextBaseJavaModule {
 		}
 
 	}
-
 
 	/**
 	 *
