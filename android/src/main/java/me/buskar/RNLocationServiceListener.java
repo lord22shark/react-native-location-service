@@ -147,7 +147,7 @@ public class RNLocationServiceListener implements LocationListener {
 
 		try {
 
-			Log.v(TAG, this.toBase64(this.toZip(this.toCRYPT(this.toPLAIN(location).getBytes()))));
+			//Log.v(TAG, this.toBase64(this.toZip(this.toCRYPT(this.toPLAIN(location).getBytes()))));
 
 			//data = this.toCRYPT(data.getBytes());
 
@@ -163,7 +163,7 @@ public class RNLocationServiceListener implements LocationListener {
 
 			data += "&identifier=" + URLEncoder.encode(this.identifier, "UTF-8");
 
-			Log.v(TAG, "[DATA] " + data);
+			//Log.v(TAG, "[DATA] " + data);
 
 			if (emitter != null) {
 

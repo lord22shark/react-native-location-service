@@ -5,6 +5,7 @@ import android.annotation.TargetApi;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -94,6 +95,11 @@ public class RNLocationService extends Service {
 	 *
 	 */
 	private SharedPreferences preferences;
+
+	/**
+	 *
+	 */
+	private Class mainActivity;
 
 	/**
 	 *
@@ -274,6 +280,8 @@ public class RNLocationService extends Service {
 
 			try {
 
+				// TODO: set me.buskar.motorista to String resources
+
 				icon = this.getPackageManager().getApplicationInfo("me.buskar.motorista", PackageManager.GET_META_DATA).icon;
 
 				Log.v(TAG, String.valueOf(icon));
@@ -282,15 +290,43 @@ public class RNLocationService extends Service {
 
 			// Notification ---
 
+			Context applicationContext = this.getApplicationContext();
+
 			NotificationManager notificationManager = getNotificationManager();
 
 			String channelID = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ? createNotificationChannel(notificationManager) : "";
 
-			NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, channelID);
+			NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(applicationContext, channelID);
+
+			// ---
+
+			try {
+
+				int acivityIndentifier = applicationContext.getResources().getIdentifier("main_activity", "string", applicationContext.getPackageName());
+
+				if (acivityIndentifier != 0) {
+
+					this.mainActivity = Class.forName(applicationContext.getResources().getString(acivityIndentifier));
+
+					PendingIntent pendingIntent = PendingIntent.getActivity(applicationContext, 0, new Intent(applicationContext, this.mainActivity), PendingIntent.FLAG_UPDATE_CURRENT);
+
+					notificationBuilder.setContentIntent(pendingIntent);
+
+				} else {
+
+					Log.e(TAG, "[RNLS] \"main_activity\" IS NOT SET in your res/values/strings.xml");
+
+				}
+
+			} catch (ClassNotFoundException cnfException) {
+
+				Log.e(TAG, "[RNLS] Could not find the class you set in res/values/strings.xmls@main_activity", cnfException);
+
+			}
+
+			// ---
 
 			Notification notification = notificationBuilder.setOngoing(true).setSmallIcon(icon).setContentTitle(NOTIFICATION_TITLE).setContentText(NOTIFICATION_TEXT).setPriority(PRIORITY_MIN).setCategory(NotificationCompat.CATEGORY_SERVICE).setChannelId(channelID).build();
-
-			// Notification ---
 
 			//JSONObject settings = BackgroundMode.getSettings();
 
@@ -319,7 +355,7 @@ public class RNLocationService extends Service {
 			String identifier = this.preferences.getString("identifier", "-1");
 			String user = this.preferences.getString("user", "-1");
 
-			this.listener = new RNLocationServiceListener(this.getApplicationContext(), null, minTime, minDistance, url, privateKey, identifier, user);
+			this.listener = new RNLocationServiceListener(applicationContext, null, minTime, minDistance, url, privateKey, identifier, user);
 
 			this.listener.start();
 
