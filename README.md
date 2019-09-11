@@ -64,7 +64,7 @@ export default class App extends Component<Props> {
 		super(props);
 
 		this.state = {
-			bla: null,
+			coords: null,
 			running: false,
 			service: false
 		};
@@ -73,64 +73,11 @@ export default class App extends Component<Props> {
 
 	componentDidMount () {
 
-		//this.fromJava();
-
 		this.subscription = DeviceEventEmitter.addListener('onLocationChanged', this.onLocationChanged.bind(this));
 
 		this.serviceBinder = DeviceEventEmitter.addListener('onBindService', this.onBindService.bind(this));
 
 		console.log('[JS] componentDidMount');
-
-		/*RNLocationService.isPermited((result) => {
-		
-			console.log('1111', result);
-		
-			if (result === false) {
-			
-				RNLocationService.requestPermission();
-			
-			}
-		
-		});*/
-
-		RNLocationService.isServiceRunning((result) => {
-
-			if (result === true) {
-
-				this.setState({
-					service12: true
-				});
-
-			}
-
-		});
-
-		const data = "a=b&c=d&e=f&0=1";
-
-		fetch('http://ilhost/public/echo.php', {
-			headers: new Headers({
-				'Content-Type': 'application/x-www-form-urlencoded',
-				'Content-Length': data.length.toString(),
-			}),
-			body: data,
-			method: 'POST',
-			mode: 'cors',
-			cache: 'no-cache'
-		}).then(response => {
-
-			return response.text();
-
-		}).then(text => {
-
-			console.log(`[JS] ${text}`);
-
-		}).catch(error => {
-
-			console.log(`[JS] ${error}`);
-
-		});
-
-
 
 	}
 
@@ -145,7 +92,7 @@ export default class App extends Component<Props> {
 	onLocationChanged (data) {
 
 		this.setState({
-			bla: data
+			coords: data
 		});
 
 	}
@@ -153,28 +100,6 @@ export default class App extends Component<Props> {
 	onBindService (isRunning) {
 
 		console.log(`[JS] Service - ${isRunning}`);
-
-	}
-
-	async fromJava () {
-
-		/*await LocationServiceModule.sendLocationData(error => {
-
-		console.error(error);
-
-		}, msg => {
-
-		this.setState({
-		bla: msg
-		});
-
-		});*/
-
-	}
-
-	toJava () {
-
-		//LocationServiceModule.receiveFromJs("O Sonho é Popular!");
 
 	}
 
@@ -212,7 +137,7 @@ export default class App extends Component<Props> {
 
 		if (this.state.running === false) {
 
-			RNLocationService.startListener(2222, 10, 'http://192.168.0.250/public/echo.php', 'q1w2e3r4t5y6u7i8', '4', 'auth0ID', (result, error) => {
+			RNLocationService.startListener(2222, 10, 'http://192.168.0.1/echo.php', 'q1w2e3r4t5y6u7i8', '4', 't408jg85jg980j', (result, error) => {
 
 				console.log('startListener', result, error);
 
@@ -250,7 +175,7 @@ export default class App extends Component<Props> {
 
 		if (this.state.service === false) {
 
-			RNLocationService.startService(2121, 5, 'http://ilhost/public/echo.php', 'q1w2e3r4t5y6u7i8', '4', 'auth0ID' (result, error) => {
+			RNLocationService.startService(2121, 5, 'http://192.168.0.1/echo.php', 'q1w2e3r4t5y6u7i8', '4', 't408jg85jg980j', (result, error) => {
 
 				console.log('[JS] Callback Start Service', result, error);
 
@@ -294,17 +219,46 @@ export default class App extends Component<Props> {
 
 	}
 
+	isListenerRunning () {
+
+		RNLocationService.isListenerRunning((result) => {
+
+			Alert.alert('RN', `RESULT: ${result}`);
+
+		});
+
+	}
+
+	isPermited () {
+
+		RNLocationService.isPermited((result) => {
+		
+			Alert.alert('PERMISSION', `R: ${result}`);
+		
+		});
+
+	}
+
+	requestPermission () {
+
+		RNLocationService.requestPermission();
+
+	}
+
 	render () {
 
 		return (
 			<View style={styles.container}>
 				<Text style={styles.instructions}>{instructions}</Text>
-				<Text style={styles.instructions}>bla: {this.state.bla || null}</Text>
+				<Text style={styles.instructions}>COORDS: {this.state.coords || null}</Text>
 				<Button title="RODA (a)" onPress={this.a.bind(this)} />
 				<Button title="RODA (b)" onPress={this.b.bind(this)} />
 				<Button title="RODA (c)" onPress={this.c.bind(this)} />
 				
-				<Button title="吗" color="#D90000" onPress={this.isRunning.bind(this)} />
+				<Button title="我可以吗" color="#D9A900" onPress={this.isPermited.bind(this)} />
+				<Button title="吗 Service Running" color="#D90000" onPress={this.isRunning.bind(this)} />
+				<Button title="吗 Listener Running" color="#D90000" onPress={this.isListenerRunning.bind(this)} />
+				<Button title="你让我用马" color="#D9A909" onPress={this.requestPermission.bind(this)} />
 				
 				<View style={{justifyContent: 'center', flexDirection: 'row', alignSelf: 'stretch'}}>
 					<Button title={(this.state.running === false) ? "START LISTENER" : "STOP LISTENER"} onPress={this.toggleListener.bind(this)} />
@@ -322,22 +276,22 @@ export default class App extends Component<Props> {
 }
 
 const styles = StyleSheet.create({
-container: {
-flex: 1,
-justifyContent: 'center',
-alignItems: 'center',
-backgroundColor: '#F5FCFF',
-},
-welcome: {
-fontSize: 20,
-textAlign: 'center',
-margin: 10,
-},
-instructions: {
-textAlign: 'center',
-color: '#333333',
-marginBottom: 5,
-},
+	container: {
+		flex: 1,
+		justifyContent: 'center',
+		alignItems: 'center',
+		backgroundColor: '#F5FCFF',
+	},
+	welcome: {
+		fontSize: 20,
+		textAlign: 'center',
+		margin: 10,
+	},
+	instructions: {
+		textAlign: 'center',
+		color: '#333333',
+		marginBottom: 5,
+	}
 });
 
 ```

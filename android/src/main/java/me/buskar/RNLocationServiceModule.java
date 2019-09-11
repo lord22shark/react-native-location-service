@@ -148,7 +148,16 @@ public class RNLocationServiceModule extends ReactContextBaseJavaModule {
 	 */
 	private Boolean isPermited () {
 
-		return (ActivityCompat.checkSelfPermission(this.reactContext.getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) && (ActivityCompat.checkSelfPermission(this.getReactApplicationContext().getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED);
+		Context context = this.getCurrentActivity().getApplicationContext();
+
+		Boolean finePermission = ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+
+		Boolean coarsePermission = ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+
+		Log.i(TAG, "Fine: " + finePermission.toString());
+		Log.i(TAG, "Coarse: " + coarsePermission.toString());
+
+		return (finePermission && coarsePermission);
 
 	}
 
@@ -161,6 +170,8 @@ public class RNLocationServiceModule extends ReactContextBaseJavaModule {
 
 	@ReactMethod
 	public void requestPermission () {
+
+		Log.i(TAG, "Requested");
 
 		ActivityCompat.requestPermissions(this.getCurrentActivity(), this.permissions, REQUEST_PERMISSION_LOCATION);
 
@@ -182,7 +193,7 @@ public class RNLocationServiceModule extends ReactContextBaseJavaModule {
 
 		try {
 
-			if (isPermited()) {
+			if (this.isPermited()) {
 
 				if ((minTime <= 0) || (minDistance <= 0.0) || (url == null)) {
 
@@ -380,7 +391,7 @@ public class RNLocationServiceModule extends ReactContextBaseJavaModule {
 
 		}
 
-		if (isPermited()) {
+		if (this.isPermited()) {
 
 			try {
 
@@ -486,6 +497,21 @@ public class RNLocationServiceModule extends ReactContextBaseJavaModule {
 	public void isServiceRunning (Callback callback) {
 
 		callback.invoke(this.isServiceRunning());
+
+	}
+
+	@ReactMethod
+	public void isListenerRunning (Callback callback) {
+
+		if (this.listener != null) {
+
+			callback.invoke(this.listener.isRunning());
+
+		} else {
+
+			callback.invoke(false);
+
+		}
 
 	}
 
