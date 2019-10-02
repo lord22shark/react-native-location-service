@@ -164,7 +164,7 @@ public class RNLocationServiceModule extends ReactContextBaseJavaModule {
 
 			} catch (Exception exception2) {
 
-				Log.e(TAG, "this.context Fail", exception);
+				Log.e(TAG, "this.context Fail", exception2);
 
 				return false;
 
