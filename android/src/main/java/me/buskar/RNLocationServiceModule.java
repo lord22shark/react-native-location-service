@@ -148,7 +148,29 @@ public class RNLocationServiceModule extends ReactContextBaseJavaModule {
 	 */
 	private Boolean isPermited () {
 
-		Context context = this.getCurrentActivity().getApplicationContext();
+		Context context;
+
+		try {
+
+			context = this.getCurrentActivity().getApplicationContext();
+
+		} catch (Exception exception) {
+
+			Log.e(TAG, "getCurrentActivity().getApplicationContext() Fail", exception);
+
+			try {
+
+				context = this.context;
+
+			} catch (Exception exception2) {
+
+				Log.e(TAG, "this.context Fail", exception);
+
+				return false;
+
+			}
+
+		}
 
 		Boolean finePermission = ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
 
